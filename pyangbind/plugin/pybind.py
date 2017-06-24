@@ -823,10 +823,6 @@ def get_children(ctx, fd, i_children, module, parent, path=str(),
     slots_str += ")\n"
     elements_str += "}\n"
     nfd.write(slots_str + "\n")
-    # Store the real name of the element - since we often get values that are
-    # not allowed in python as identifiers, but we need the real-name when
-    # creating instance documents (e.g., peer-group is not valid due to '-').
-    nfd.write("  _yang_name = '%s'\n" % (parent.arg))
 
     choices = {}
     choice_attrs = []
@@ -978,10 +974,18 @@ def get_children(ctx, fd, i_children, module, parent, path=str(),
     # set.
 
     # Generic class __init__, set up the path_helper if asked to.
-    nfd.write("""
-  _pybind_generated_by = 'container'
 
-  def __init__(self, *args, **kwargs):\n""")
+    # _yang_name
+    # Store the real name of the element - since we often get values that are
+    # not allowed in python as identifiers, but we need the real-name when
+    # creating instance documents (e.g., peer-group is not valid due to '-').
+    nfd.write("""
+
+  def __init__(self, *args, **kwargs):
+    _pybind_generated_by = 'container'
+    _yang_name = '{yang_name}'
+
+""".format(yang_name=parent.arg))
     if ctx.opts.use_xpathhelper:
       nfd.write("""
     helper = kwargs.pop("path_helper", None)
